@@ -1,0 +1,19 @@
+{
+  "name": "weddingalbum",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/catalog-albums.mjs && vite",
+    "build": "node scripts/catalog-albums.mjs && tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "catalog": "node scripts/catalog-albums.mjs",
+    "optimize": "node scripts/optimize-images.mjs"
+  },
+  "devDependencies": {
+    "@fontsource/cormorant-garamond": "^5.2.6",
+    "sharp": "^0.34.3",
+    "typescript": "^5.9.2",
+    "vite": "^6.3.5"
+  }
+}
