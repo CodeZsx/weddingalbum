@@ -1,4 +1,4 @@
-import { type Album } from "./data";
+import { type Album, site } from "./data";
 
 export type Visibility = {
   albums: Record<string, { on: boolean; off: string[] }>;
@@ -6,20 +6,68 @@ export type Visibility = {
 
 const DRAFT_KEY = "weddingalbum-visibility";
 const AUTH_KEY = "weddingalbum-admin";
+const TOKEN_KEY = "weddingalbum-github-token";
 
 let fileState: Visibility = { albums: {} };
+let remoteSha = "";
 let draft: Visibility | null = null;
 
 function clone(value: Visibility): Visibility {
   return JSON.parse(JSON.stringify(value)) as Visibility;
 }
 
-export async function loadVisibility() {
+function decodeBase64(value: string): string {
+  const binary = atob(value.replace(/\s/g, ""));
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+function encodeBase64(value: string): string {
+  const bytes = new TextEncoder().encode(value);
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary);
+}
+
+function githubContentsUrl(): string {
+  return `https://api.github.com/repos/${site.githubRepo}/contents/${site.visibilityFile}`;
+}
+
+async function loadBundledVisibility(): Promise<Visibility> {
   try {
     const response = await fetch("./visibility.json", { cache: "no-store" });
-    if (response.ok) fileState = (await response.json()) as Visibility;
+    if (response.ok) return (await response.json()) as Visibility;
   } catch {
-    fileState = { albums: {} };
+    /* empty */
+  }
+  return { albums: {} };
+}
+
+async function loadRemoteVisibility(): Promise<{ vis: Visibility; sha: string } | null> {
+  try {
+    const response = await fetch(githubContentsUrl(), {
+      headers: { Accept: "application/vnd.github+json" },
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
+    const payload = (await response.json()) as { content?: string; sha?: string };
+    if (!payload.content || !payload.sha) return null;
+    return { vis: JSON.parse(decodeBase64(payload.content)) as Visibility, sha: payload.sha };
+  } catch {
+    return null;
+  }
+}
+
+export async function loadVisibility() {
+  const remote = await loadRemoteVisibility();
+  if (remote) {
+    fileState = remote.vis;
+    remoteSha = remote.sha;
+  } else {
+    fileState = await loadBundledVisibility();
+    remoteSha = "";
   }
   if (isAdmin()) {
     const raw = localStorage.getItem(DRAFT_KEY);
@@ -62,6 +110,16 @@ export function loginAdmin(password: string, expected: string): boolean {
 export function logoutAdmin() {
   sessionStorage.removeItem(AUTH_KEY);
   draft = null;
+}
+
+export function getGithubToken(): string {
+  return localStorage.getItem(TOKEN_KEY) ?? "";
+}
+
+export function setGithubToken(token: string) {
+  const next = token.trim();
+  if (next) localStorage.setItem(TOKEN_KEY, next);
+  else localStorage.removeItem(TOKEN_KEY);
 }
 
 function albumEntry(id: string) {
@@ -114,15 +172,42 @@ export function visibilityJson(): string {
   return `${JSON.stringify(currentVisibility(), null, 2)}\n`;
 }
 
-export async function saveVisibilityToSite(): Promise<boolean> {
+export async function publishVisibility(): Promise<{ ok: boolean; message: string }> {
+  const token = getGithubToken();
+  if (!token) {
+    return { ok: false, message: "先在本页填入 GitHub Token，保存后访客刷新即可看到，不用重新发布网站。" };
+  }
+
   try {
-    const response = await fetch("/__admin/visibility", {
+    const latest = await loadRemoteVisibility();
+    if (latest) remoteSha = latest.sha;
+
+    const response = await fetch(githubContentsUrl(), {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: visibilityJson(),
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: "更新相册上下线",
+        content: encodeBase64(visibilityJson()),
+        sha: remoteSha || undefined,
+      }),
     });
-    return response.ok;
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        return { ok: false, message: "Token 无效或权限不够，需要勾选 repo 权限。" };
+      }
+      return { ok: false, message: `保存失败（${response.status}）。` };
+    }
+
+    const payload = (await response.json()) as { content?: { sha?: string } };
+    if (payload.content?.sha) remoteSha = payload.content.sha;
+    fileState = clone(currentVisibility());
+    return { ok: true, message: "已保存。访客刷新页面即可看到，不用重新发布。" };
   } catch {
-    return false;
+    return { ok: false, message: "保存失败，请检查网络后重试。" };
   }
 }

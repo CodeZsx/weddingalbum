@@ -30,6 +30,8 @@ export type Site = {
   quote: string;
   about: string[];
   adminPassword: string;
+  githubRepo: string;
+  visibilityFile: string;
 };
 
 export const site: Site = {
@@ -38,13 +40,15 @@ export const site: Site = {
   date: "2026.10.03",
   dateFormal: "二〇二六年十月三日",
   location: "",
-  tagline: "婚纱写真",
-  quote: "把这些照片，慢慢看完。",
+  tagline: "我们的样子",
+  quote: "不必一次看完。它们会等。",
   adminPassword: "xt1003",
+  githubRepo: "CodeZsx/weddingalbum",
+  visibilityFile: "public/visibility.json",
   about: [
-    "这些是张守祥与张悦婷的婚纱照，想留给自己，也留给你们。",
-    "精修是挑过的，初修更全，产品是相册、挂画和摆台。点进去即可，也可以开沉浸式左右翻页。",
-    "十月三日是婚期。这里先放下写真，婚礼当天的照片以后再补。",
+    "这些照片，是张守祥与张悦婷留给彼此的，也留给看见的人。",
+    "精修里，是反复看过仍想留下的样子。初修更全，还带着拍摄那天的次序。入了册、上了墙的，在产品里。",
+    "十月三日，是我们的婚期。婚礼当天的光阴，以后再补进来。",
   ],
 };
 
@@ -54,21 +58,21 @@ const blueprints = [
     title: "精修",
     en: "Fine",
     coverId: "A71I4485.jpg",
-    description: "挑过的写真。颜色、光线和想留下来的样子。",
+    description: "反复看过，仍想留下来的样子。",
   },
   {
     id: "初修",
     title: "初修",
     en: "Proofs",
     coverId: "A71I4541.jpg",
-    description: "更全的一套初修，按拍摄顺序排，方便慢慢翻。",
+    description: "拍摄那天的次序，一张也不想先丢掉。",
   },
   {
     id: "产品",
     title: "产品",
     en: "Album",
     coverId: "4摆台20x20cm.jpg",
-    description: "相册内页、挂画和摆台。看做成册、上墙之后的样子。",
+    description: "入了册，上了墙。它们开始有自己的位置。",
   },
 ] as const;
 

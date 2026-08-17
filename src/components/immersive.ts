@@ -22,7 +22,7 @@ export function mountImmersive() {
   root.hidden = true;
   root.innerHTML = `
     <header class="imm__bar">
-      <button class="imm__text" type="button" data-close>退出</button>
+      <button class="imm__text" type="button" data-close>回去</button>
       <span class="imm__count"></span>
     </header>
     <div class="imm__stage" data-stage>

@@ -1,14 +1,15 @@
 import { albums, site } from "../data";
 import {
+  getGithubToken,
   isAdmin,
   isAlbumOn,
   isPhotoOn,
   loginAdmin,
   logoutAdmin,
-  saveVisibilityToSite,
+  publishVisibility,
   setAlbumOn,
+  setGithubToken,
   setPhotoOn,
-  visibilityJson,
 } from "../visibility";
 import { escapeHtml } from "../utils";
 
@@ -35,10 +36,13 @@ export function renderAdmin(): string {
     <section class="admin">
       <p class="eyebrow">Admin</p>
       <h1>管理</h1>
-      <p class="admin__lead">点选照片即可上下线，关掉的访客看不到。草稿先存在这台浏览器，写入配置后才会进仓库。预览图滚到附近才加载。</p>
+      <p class="admin__lead">点选即可上下线。填一次 GitHub Token 后，改动会直接写到仓库，访客刷新就能看到，不用重新发布网站。</p>
+      <label class="admin__token">
+        <span>GitHub Token（只存在这台电脑）</span>
+        <input type="password" data-token value="${escapeHtml(getGithubToken())}" placeholder="ghp_ 开头，勾选 repo 权限" autocomplete="off" />
+      </label>
       <div class="admin__actions">
-        <button class="admin__btn" type="button" data-save>写入本机配置</button>
-        <button class="admin__btn admin__btn--ghost" type="button" data-download>下载 visibility.json</button>
+        <button class="admin__btn" type="button" data-save>保存，立即生效</button>
         <button class="admin__btn admin__btn--ghost" type="button" data-logout>退出</button>
       </div>
       <p class="admin__msg" data-msg hidden></p>
@@ -104,19 +108,27 @@ export function bindAdmin(root: HTMLElement) {
     window.dispatchEvent(new HashChangeEvent("hashchange"));
   });
 
-  root.querySelector("[data-download]")?.addEventListener("click", () => {
-    const blob = new Blob([visibilityJson()], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "visibility.json";
-    link.click();
-    URL.revokeObjectURL(url);
+  const tokenInput = root.querySelector<HTMLInputElement>("[data-token]");
+  tokenInput?.addEventListener("change", () => {
+    setGithubToken(tokenInput.value);
   });
 
-  root.querySelector("[data-save]")?.addEventListener("click", async () => {
-    const ok = await saveVisibilityToSite();
-    say(ok ? "已写入 public/visibility.json。提交仓库后访客才会看到。" : "现在写不进文件。请下载 visibility.json，放到 public/ 后再部署。");
+  let saveTimer = 0;
+  const saveNow = async () => {
+    if (tokenInput) setGithubToken(tokenInput.value);
+    say("正在保存…");
+    const result = await publishVisibility();
+    say(result.message);
+  };
+  const saveSoon = () => {
+    window.clearTimeout(saveTimer);
+    saveTimer = window.setTimeout(() => {
+      void saveNow();
+    }, 900);
+  };
+
+  root.querySelector("[data-save]")?.addEventListener("click", () => {
+    void saveNow();
   });
 
   const preview = new IntersectionObserver(
@@ -150,12 +162,14 @@ export function bindAdmin(root: HTMLElement) {
       const checked = (event.currentTarget as HTMLInputElement).checked;
       setAlbumOn(albumId, checked);
       block.classList.toggle("is-album-off", !checked);
+      saveSoon();
     });
     block.querySelectorAll<HTMLInputElement>("[data-photo]").forEach((input) => {
       input.addEventListener("change", () => {
         setPhotoOn(albumId, input.dataset.photo ?? "", input.checked);
         input.closest(".admin-shot")?.classList.toggle("is-off", !input.checked);
         recount(block);
+        saveSoon();
       });
     });
   });

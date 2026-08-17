@@ -44,4 +44,9 @@ function visibilityApi(): Plugin {
 export default defineConfig({
   base: "./",
   plugins: [visibilityApi()],
+  server: {
+    host: "0.0.0.0",
+    port: 5174,
+    strictPort: true,
+  },
 });

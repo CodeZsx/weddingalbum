@@ -27,15 +27,16 @@ npm run dev
 
 打开 `#/admin`，默认口令 `xt1003`（可在 `src/data.ts` 的 `adminPassword` 修改）。
 
-- 可以整本相册上线 / 下线
-- 可以单张上线 / 下线
+- 可以整本相册、单张照片上线 / 下线
 - 访客只看上线的内容
-- 「写入本机配置」在 `npm run dev` 时写入 `public/visibility.json`
-- 部署环境写不了文件时，用「下载 visibility.json」，放到 `public/` 再提交
+- 在管理页填一次 GitHub Token（权限勾选 `repo`），之后点选会自动保存
+- 访客刷新即可看到，不用重新发布整个网站
+
+Token 在 GitHub：**Settings → Developer settings → Personal access tokens** 新建，勾选 `repo`。只存在你这台电脑的浏览器里。
 
 ## 沉浸式
 
-相册页点「沉浸式观看」，或直接点一张照片：只留图片，左右滑动 / 点两侧 / 方向键翻页，底部是前后照片预览条。
+相册页右下角浮动按钮，或直接点一张照片：只留图片，左右滑动 / 点两侧 / 方向键翻页，底部是前后照片预览条。
 
 ## 部署
 
