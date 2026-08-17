@@ -3,7 +3,6 @@ import { escapeHtml, joinMeta } from "../utils";
 
 export function renderHome(albumList: Album[]): string {
   const [a, b] = site.names;
-  const featured = albumList[0];
   return `
     <section class="hero">
       <p class="eyebrow">${escapeHtml(site.tagline)}</p>
@@ -14,13 +13,6 @@ export function renderHome(albumList: Album[]): string {
       </h1>
       <p class="hero__meta">${escapeHtml(joinMeta("婚期", site.dateFormal, site.location))}</p>
       <p class="hero__quote">${escapeHtml(site.quote)}</p>
-      ${
-        featured
-          ? `<figure class="hero__image">
-        <img src="${escapeHtml(featured.cover)}" alt="${escapeHtml(featured.title)}" />
-      </figure>`
-          : ""
-      }
     </section>
 
     <section class="albums" id="albums">
