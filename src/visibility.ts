@@ -31,6 +31,15 @@ function encodeBase64(value: string): string {
   return btoa(binary);
 }
 
+function githubHeaders(token?: string): HeadersInit {
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+  };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return headers;
+}
+
 function githubContentsUrl(): string {
   return `https://api.github.com/repos/${site.githubRepo}/contents/${site.visibilityFile}`;
 }
@@ -45,10 +54,12 @@ async function loadBundledVisibility(): Promise<Visibility> {
   return { albums: {} };
 }
 
-async function loadRemoteVisibility(): Promise<{ vis: Visibility; sha: string } | null> {
+async function loadRemoteVisibility(
+  token = getGithubToken(),
+): Promise<{ vis: Visibility; sha: string } | null> {
   try {
     const response = await fetch(githubContentsUrl(), {
-      headers: { Accept: "application/vnd.github+json" },
+      headers: githubHeaders(token),
       cache: "no-store",
     });
     if (!response.ok) return null;
@@ -172,41 +183,75 @@ export function visibilityJson(): string {
   return `${JSON.stringify(currentVisibility(), null, 2)}\n`;
 }
 
+let publishLock: Promise<void> = Promise.resolve();
+
 export async function publishVisibility(): Promise<{ ok: boolean; message: string }> {
   const token = getGithubToken();
   if (!token) {
     return { ok: false, message: "先在本页填入 GitHub Token，保存后访客刷新即可看到，不用重新发布网站。" };
   }
 
+  let release: () => void = () => undefined;
+  const previous = publishLock;
+  publishLock = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await previous;
+
   try {
-    const latest = await loadRemoteVisibility();
-    if (latest) remoteSha = latest.sha;
+    return await putVisibility(token);
+  } finally {
+    release();
+  }
+}
 
-    const response = await fetch(githubContentsUrl(), {
-      method: "PUT",
-      headers: {
-        Accept: "application/vnd.github+json",
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message: "更新相册上下线",
-        content: encodeBase64(visibilityJson()),
-        sha: remoteSha || undefined,
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        return { ok: false, message: "Token 无效或权限不够，需要勾选 repo 权限。" };
+async function putVisibility(token: string): Promise<{ ok: boolean; message: string }> {
+  try {
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const body = visibilityJson();
+      const latest = await loadRemoteVisibility(token);
+      if (latest) {
+        remoteSha = latest.sha;
+        if (body === `${JSON.stringify(latest.vis, null, 2)}\n`) {
+          fileState = clone(latest.vis);
+          return { ok: true, message: "已是最新，无需再存。" };
+        }
       }
+
+      const response = await fetch(githubContentsUrl(), {
+        method: "PUT",
+        headers: {
+          ...githubHeaders(token),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: "更新相册上下线",
+          content: encodeBase64(body),
+          branch: "main",
+          sha: remoteSha || undefined,
+        }),
+      });
+
+      if (response.ok) {
+        const payload = (await response.json()) as { content?: { sha?: string } };
+        if (payload.content?.sha) remoteSha = payload.content.sha;
+        fileState = clone(currentVisibility());
+        return { ok: true, message: "已保存。访客刷新页面即可看到，不用重新发布。" };
+      }
+
+      if (response.status === 401 || response.status === 403) {
+        return { ok: false, message: "Token 无效或权限不够。细粒度 Token 需要 Contents: Read and write。" };
+      }
+
+      if (response.status === 409 || response.status === 422) {
+        remoteSha = "";
+        continue;
+      }
+
       return { ok: false, message: `保存失败（${response.status}）。` };
     }
 
-    const payload = (await response.json()) as { content?: { sha?: string } };
-    if (payload.content?.sha) remoteSha = payload.content.sha;
-    fileState = clone(currentVisibility());
-    return { ok: true, message: "已保存。访客刷新页面即可看到，不用重新发布。" };
+    return { ok: false, message: "保存冲突，请再点一次保存。" };
   } catch {
     return { ok: false, message: "保存失败，请检查网络后重试。" };
   }

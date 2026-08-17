@@ -114,11 +114,26 @@ export function bindAdmin(root: HTMLElement) {
   });
 
   let saveTimer = 0;
+  let saving = false;
+  let saveAgain = false;
   const saveNow = async () => {
+    window.clearTimeout(saveTimer);
     if (tokenInput) setGithubToken(tokenInput.value);
+    if (saving) {
+      saveAgain = true;
+      return;
+    }
+    saving = true;
     say("正在保存…");
-    const result = await publishVisibility();
-    say(result.message);
+    try {
+      do {
+        saveAgain = false;
+        const result = await publishVisibility();
+        say(result.message);
+      } while (saveAgain);
+    } finally {
+      saving = false;
+    }
   };
   const saveSoon = () => {
     window.clearTimeout(saveTimer);
