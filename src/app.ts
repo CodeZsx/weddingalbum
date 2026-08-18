@@ -7,6 +7,7 @@ import { renderAbout } from "./views/about";
 import { bindAdmin, renderAdmin } from "./views/admin";
 import { renderAlbum } from "./views/album";
 import { renderHome } from "./views/home";
+import { renderInvite } from "./views/invite";
 
 export async function startApp(root: HTMLElement) {
   mountImmersive();
@@ -39,6 +40,13 @@ function render(root: HTMLElement) {
   const visible = publishedAlbums(albums);
   const [a, b] = site.names;
 
+  if (route.name === "invite") {
+    root.innerHTML = renderInvite(route.style);
+    window.scrollTo({ top: 0, behavior: "instant" });
+    document.title = `邀请函 · ${a} & ${b}`;
+    return;
+  }
+
   root.innerHTML = `
     <header class="site-header">
       <a class="brand" href="#/">
@@ -47,6 +55,7 @@ function render(root: HTMLElement) {
       </a>
       <nav class="nav">
         <a href="#/" data-nav="home">相册</a>
+        <a href="#/invite/letter" data-nav="invite">邀请</a>
         <a href="#/about" data-nav="about">关于</a>
         ${isAdmin() ? `<a href="#/admin" data-nav="admin">管理</a>` : ""}
       </nav>

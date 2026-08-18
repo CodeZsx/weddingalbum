@@ -39,7 +39,7 @@ export const site: Site = {
   monogram: "祥婷",
   date: "2026.10.03",
   dateFormal: "二〇二六年十月三日",
-  location: "",
+  location: "仁和镇张家门前",
   tagline: "我们的样子",
   quote: "不必一次看完。它们会等。",
   adminPassword: "xt1003",
@@ -95,3 +95,26 @@ export const albums: Album[] = blueprints.map((meta) => {
 export function getAlbum(id: string, pool: Album[] = albums): Album | undefined {
   return pool.find((album) => album.id === id);
 }
+
+export type InviteStyle = "letter" | "folio" | "seal" | "verse" | "date" | "gate";
+
+export const invite = {
+  greeting: "把这一天，轻轻告诉你。",
+  closer: "我们等你。",
+  letter: [
+    "二〇二六年十月三日，张守祥与张悦婷成婚。",
+    "不必远道，也不必备礼。你在，便是这一天的一部分。",
+  ],
+  time: "2026.10.03 11:28",
+  place: "仁和镇张家门前",
+  note: "衣着深浅皆宜。不必盛装，人到就好。",
+};
+
+export const inviteStyles: { id: InviteStyle; name: string; en: string }[] = [
+  { id: "letter", name: "短笺", en: "Letter" },
+  { id: "folio", name: "册页", en: "Folio" },
+  { id: "seal", name: "夜宴", en: "Seal" },
+  { id: "verse", name: "竖笺", en: "Verse" },
+  { id: "date", name: "佳期", en: "Date" },
+  { id: "gate", name: "对开", en: "Gate" },
+];

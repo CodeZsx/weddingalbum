@@ -1,8 +1,13 @@
+import type { InviteStyle } from "./data";
+
 export type Route =
   | { name: "home" }
   | { name: "album"; id: string }
   | { name: "about" }
-  | { name: "admin" };
+  | { name: "admin" }
+  | { name: "invite"; style: InviteStyle };
+
+const inviteStyles = new Set<InviteStyle>(["letter", "folio", "seal", "verse", "date", "gate"]);
 
 function decodePart(value: string): string {
   try {
@@ -19,6 +24,10 @@ export function parseHash(hash = window.location.hash): Route {
   const parts = path.split("/").filter(Boolean).map(decodePart);
   if (parts[0] === "about") return { name: "about" };
   if (parts[0] === "admin") return { name: "admin" };
+  if (parts[0] === "invite") {
+    const style = inviteStyles.has(parts[1] as InviteStyle) ? (parts[1] as InviteStyle) : "letter";
+    return { name: "invite", style };
+  }
   if (parts[0] === "album" && parts[1]) return { name: "album", id: parts[1] };
   return { name: "home" };
 }
@@ -26,6 +35,7 @@ export function parseHash(hash = window.location.hash): Route {
 export function toHash(route: Route): string {
   if (route.name === "about") return "#/about";
   if (route.name === "admin") return "#/admin";
+  if (route.name === "invite") return `#/invite/${route.style}`;
   if (route.name === "album") return `#/album/${encodeURIComponent(route.id)}`;
   return "#/";
 }
