@@ -108,6 +108,14 @@ export const invite = {
   time: "2026.10.03 11:28",
   place: "仁和镇张家门前",
   note: "衣着深浅皆宜。不必盛装，人到就好。",
+  photos: {
+    letter: "A71I4533.jpg",
+    folio: "A71I4485.jpg",
+    seal: "A71I4542.jpg",
+    verse: "A71I4512.jpg",
+    date: "A71I4856.jpg",
+    gate: ["A71I4103.jpg", "A71I4877.jpg"],
+  },
 };
 
 export const inviteStyles: { id: InviteStyle; name: string; en: string }[] = [

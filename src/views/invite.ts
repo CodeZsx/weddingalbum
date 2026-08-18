@@ -1,5 +1,9 @@
-import { albums, invite, inviteStyles, site, type InviteStyle } from "../data";
+import { getAlbum, invite, inviteStyles, site, type InviteStyle } from "../data";
 import { escapeHtml, monogramMark } from "../utils";
+
+function shot(id: string): string {
+  return getAlbum("精修")?.photos.find((photo) => photo.id === id)?.src ?? "";
+}
 
 const views: Record<InviteStyle, () => string> = {
   letter,
@@ -62,9 +66,11 @@ function events(): string {
 }
 
 function letter(): string {
+  const photo = shot(invite.photos.letter);
   return `
     <article class="invite-card">
       ${monogramMark(48)}
+      ${photo ? `<figure class="invite-card__photo"><img src="${escapeHtml(photo)}" alt="" /></figure>` : ""}
       <p class="eyebrow">Invitation</p>
       <p class="invite-greeting">${escapeHtml(invite.greeting)}</p>
       ${names()}
@@ -79,11 +85,11 @@ function letter(): string {
 }
 
 function folio(): string {
-  const cover = albums[0]?.cover ?? "";
+  const photo = shot(invite.photos.folio);
   return `
     <div class="invite-folio">
       <figure class="invite-folio__photo">
-        ${cover ? `<img src="${escapeHtml(cover)}" alt="" />` : ""}
+        ${photo ? `<img src="${escapeHtml(photo)}" alt="" />` : ""}
       </figure>
       <div class="invite-folio__body">
         <p class="eyebrow">Invitation</p>
@@ -101,9 +107,14 @@ function folio(): string {
 }
 
 function seal(): string {
+  const photo = shot(invite.photos.seal);
   return `
     <section class="invite-seal__hero">
-      <div class="invite-seal__ring">${monogramMark(56)}</div>
+      ${
+        photo
+          ? `<figure class="invite-seal__portrait"><img src="${escapeHtml(photo)}" alt="" /></figure>`
+          : `<div class="invite-seal__ring">${monogramMark(56)}</div>`
+      }
       <p class="eyebrow">The Wedding</p>
       ${names()}
       <p class="invite-date">${escapeHtml(site.dateFormal)}</p>
@@ -120,18 +131,22 @@ function seal(): string {
 
 function verse(): string {
   const [a, b] = site.names;
+  const photo = shot(invite.photos.verse);
   return `
     <article class="invite-verse">
       <span class="invite-verse__rod"></span>
       <div class="invite-verse__sheet">
-        <p class="invite-verse__col invite-verse__col--name">${escapeHtml(a)}</p>
-        <p class="invite-verse__col invite-verse__col--soft">与</p>
-        <p class="invite-verse__col invite-verse__col--name">${escapeHtml(b)}</p>
-        <p class="invite-verse__col invite-verse__col--soft">成婚</p>
-        <p class="invite-verse__col">${escapeHtml(invite.time)}</p>
-        <p class="invite-verse__col">${escapeHtml(invite.place)}</p>
-        ${invite.letter.map((p) => `<p class="invite-verse__col invite-verse__col--copy">${escapeHtml(p)}</p>`).join("")}
-        <p class="invite-verse__col invite-verse__col--gold">${escapeHtml(invite.closer)}</p>
+        ${photo ? `<figure class="invite-verse__photo"><img src="${escapeHtml(photo)}" alt="" /></figure>` : ""}
+        <div class="invite-verse__cols">
+          <p class="invite-verse__col invite-verse__col--name">${escapeHtml(a)}</p>
+          <p class="invite-verse__col invite-verse__col--soft">与</p>
+          <p class="invite-verse__col invite-verse__col--name">${escapeHtml(b)}</p>
+          <p class="invite-verse__col invite-verse__col--soft">成婚</p>
+          <p class="invite-verse__col">${escapeHtml(invite.time)}</p>
+          <p class="invite-verse__col">${escapeHtml(invite.place)}</p>
+          ${invite.letter.map((p) => `<p class="invite-verse__col invite-verse__col--copy">${escapeHtml(p)}</p>`).join("")}
+          <p class="invite-verse__col invite-verse__col--gold">${escapeHtml(invite.closer)}</p>
+        </div>
       </div>
       <span class="invite-verse__rod"></span>
     </article>
@@ -139,12 +154,14 @@ function verse(): string {
 }
 
 function date(): string {
+  const photo = shot(invite.photos.date);
   return `
     <section class="invite-poster">
       <p class="eyebrow">Save the Date</p>
       <p class="invite-poster__month">十月</p>
       <p class="invite-poster__num">03</p>
       <p class="invite-poster__year">二〇二六</p>
+      ${photo ? `<figure class="invite-poster__photo"><img src="${escapeHtml(photo)}" alt="" /></figure>` : ""}
       ${names()}
       <p class="invite-greeting">${escapeHtml(invite.greeting)}</p>
       <div class="invite-rule"></div>
@@ -158,9 +175,13 @@ function date(): string {
 
 function gate(): string {
   const [a, b] = site.names;
+  const [leftId, rightId] = invite.photos.gate;
+  const left = shot(leftId);
+  const right = shot(rightId);
   return `
     <div class="invite-gate">
       <aside class="invite-gate__panel invite-gate__panel--left">
+        ${left ? `<img class="invite-gate__img" src="${escapeHtml(left)}" alt="" />` : ""}
         <span class="invite-gate__zi">祥</span>
         <span class="invite-gate__who">${escapeHtml(a)}</span>
       </aside>
@@ -175,6 +196,7 @@ function gate(): string {
         <p class="invite-closer">${escapeHtml(invite.closer)}</p>
       </section>
       <aside class="invite-gate__panel invite-gate__panel--right">
+        ${right ? `<img class="invite-gate__img" src="${escapeHtml(right)}" alt="" />` : ""}
         <span class="invite-gate__zi">婷</span>
         <span class="invite-gate__who">${escapeHtml(b)}</span>
       </aside>
