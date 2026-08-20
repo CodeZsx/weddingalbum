@@ -7,7 +7,7 @@ import { renderAbout } from "./views/about";
 import { bindAdmin, renderAdmin } from "./views/admin";
 import { renderAlbum } from "./views/album";
 import { renderHome } from "./views/home";
-import { renderInvite } from "./views/invite";
+import { bindInvite, renderInvite, stopInviteMusic } from "./views/invite";
 
 export async function startApp(root: HTMLElement) {
   mountImmersive();
@@ -42,10 +42,13 @@ function render(root: HTMLElement) {
 
   if (route.name === "invite") {
     root.innerHTML = renderInvite(route.style);
+    bindInvite(root);
     window.scrollTo({ top: 0, behavior: "instant" });
     document.title = `邀请函 · ${a} & ${b}`;
     return;
   }
+
+  stopInviteMusic();
 
   root.innerHTML = `
     <header class="site-header">

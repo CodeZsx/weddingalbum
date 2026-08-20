@@ -96,7 +96,16 @@ export function getAlbum(id: string, pool: Album[] = albums): Album | undefined 
   return pool.find((album) => album.id === id);
 }
 
-export type InviteStyle = "letter" | "folio" | "seal" | "verse" | "date" | "gate";
+export type InviteStyle =
+  | "letter"
+  | "folio"
+  | "seal"
+  | "verse"
+  | "date"
+  | "gate"
+  | "overture"
+  | "reel"
+  | "mist";
 
 export const invite = {
   greeting: "把这一天，轻轻告诉你。",
@@ -115,7 +124,11 @@ export const invite = {
     verse: "A71I4512.jpg",
     date: "A71I4856.jpg",
     gate: ["A71I4103.jpg", "A71I4877.jpg"],
+    overture: "A71I4485.jpg",
+    reel: ["A71I4451.jpg", "A71I4485.jpg", "A71I4877.jpg", "A71I4794.jpg"],
+    mist: "A71I4877.jpg",
   },
+  music: "./invite.mp3",
 };
 
 export const inviteStyles: { id: InviteStyle; name: string; en: string }[] = [
@@ -125,4 +138,7 @@ export const inviteStyles: { id: InviteStyle; name: string; en: string }[] = [
   { id: "verse", name: "竖笺", en: "Verse" },
   { id: "date", name: "佳期", en: "Date" },
   { id: "gate", name: "对开", en: "Gate" },
+  { id: "overture", name: "开场", en: "Overture" },
+  { id: "reel", name: "胶片", en: "Reel" },
+  { id: "mist", name: "烟影", en: "Mist" },
 ];

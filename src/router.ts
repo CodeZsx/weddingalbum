@@ -7,7 +7,17 @@ export type Route =
   | { name: "admin" }
   | { name: "invite"; style: InviteStyle };
 
-const inviteStyles = new Set<InviteStyle>(["letter", "folio", "seal", "verse", "date", "gate"]);
+const inviteStyles = new Set<InviteStyle>([
+  "letter",
+  "folio",
+  "seal",
+  "verse",
+  "date",
+  "gate",
+  "overture",
+  "reel",
+  "mist",
+]);
 
 function decodePart(value: string): string {
   try {

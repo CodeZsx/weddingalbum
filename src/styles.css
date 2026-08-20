@@ -1330,7 +1330,7 @@ body.is-locked .imm-fab {
 
 .invite-gate {
   display: grid;
-  grid-template-columns: minmax(88px, 18vw) minmax(0, 1fr) minmax(88px, 18vw);
+  grid-template-columns: minmax(200px, 30vw) minmax(0, 1fr) minmax(200px, 30vw);
   min-height: 100vh;
 }
 
@@ -1387,6 +1387,191 @@ body.is-locked .imm-fab {
 
 .invite-gate__fold .invite-copy {
   max-width: 28em;
+}
+
+.invite-music {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(22px, env(safe-area-inset-bottom));
+  z-index: 13;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--gold);
+  border-radius: 50%;
+  background: rgba(243, 238, 230, 0.92);
+  color: var(--gold);
+  font-size: 16px;
+}
+
+.invite-music.is-on {
+  animation: music-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes music-pulse {
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 6px rgba(156, 134, 99, 0.16);
+  }
+}
+
+.invite--overture,
+.invite--mist {
+  background: #14110e;
+}
+
+.invite--overture .invite-switch,
+.invite--mist .invite-switch {
+  background: rgba(20, 17, 14, 0.72);
+  border-color: rgba(196, 174, 134, 0.28);
+}
+
+.invite--overture .invite-switch a,
+.invite--mist .invite-switch a {
+  color: rgba(239, 231, 219, 0.55);
+}
+
+.invite--overture .invite-switch a.is-active,
+.invite--overture .invite-switch a:hover,
+.invite--mist .invite-switch a.is-active,
+.invite--mist .invite-switch a:hover {
+  color: #efe7db;
+}
+
+.invite--overture .invite-music,
+.invite--mist .invite-music {
+  background: rgba(20, 17, 14, 0.82);
+  color: #c4ae86;
+}
+
+.invite-overture__cover {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.invite-overture__cover img {
+  width: 100%;
+  height: 100vh;
+  object-fit: cover;
+}
+
+.invite-overture__veil {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 24px 80px;
+  background: linear-gradient(to top, rgba(20, 17, 14, 0.78), transparent 55%);
+  color: #efe7db;
+  text-align: center;
+}
+
+.invite-overture__veil .invite-names i,
+.invite-overture__veil .eyebrow {
+  color: #c4ae86;
+}
+
+.invite-overture__veil .invite-date {
+  color: rgba(239, 231, 219, 0.7);
+}
+
+.invite-overture__open {
+  margin-top: 28px;
+  padding: 10px 22px;
+  border: 1px solid #c4ae86;
+  color: #efe7db;
+  letter-spacing: 0.28em;
+  font-size: 12px;
+}
+
+.invite-overture__body {
+  display: none;
+  width: min(560px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 48px 0 120px;
+  text-align: center;
+  color: rgba(239, 231, 219, 0.72);
+}
+
+.invite-overture.is-open .invite-overture__cover {
+  min-height: 58vh;
+}
+
+.invite-overture.is-open .invite-overture__cover img {
+  height: 58vh;
+}
+
+.invite-overture.is-open .invite-overture__open {
+  display: none;
+}
+
+.invite-overture.is-open .invite-overture__body {
+  display: block;
+}
+
+.invite-overture__body .invite-greeting,
+.invite-overture__body .invite-closer,
+.invite-overture__body .invite-events__label {
+  color: #c4ae86;
+}
+
+.invite--reel {
+  display: grid;
+  place-items: start center;
+  padding: 108px 20px 96px;
+  background: var(--paper);
+}
+
+.invite-reel {
+  width: min(920px, 100%);
+  text-align: center;
+}
+
+.invite-reel .invite-names {
+  margin: 8px 0 32px;
+}
+
+.invite-reel__strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 0 0 36px;
+  padding: 12px;
+  background: #2a2420;
+}
+
+.invite-reel__strip img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+}
+
+.invite-mist {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 108px 20px 64px;
+}
+
+.invite-mist__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.invite-mist__card {
+  position: relative;
+  width: min(480px, 100%);
+  padding: 48px 32px 40px;
+  text-align: center;
+  background: rgba(243, 238, 230, 0.82);
+  backdrop-filter: blur(14px);
+  color: var(--ink);
 }
 
 @media (max-width: 800px) {
@@ -1451,6 +1636,7 @@ body.is-locked .imm-fab {
   .invite-gate__panel {
     flex-direction: row;
     gap: 16px;
+    min-height: 200px;
     padding: 18px 16px;
   }
 
@@ -1465,6 +1651,14 @@ body.is-locked .imm-fab {
 
   .invite-gate__fold {
     padding: 40px 20px 56px;
+  }
+
+  .invite-reel__strip {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .invite-mist__card {
+    padding: 36px 20px;
   }
 }
 
